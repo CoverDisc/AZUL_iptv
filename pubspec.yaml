@@ -26,7 +26,7 @@ dependencies:
   filling_slider: ^0.0.3
   loading_animation_widget: ^1.2.1
   wakelock_plus: ^1.2.11
-  
+
 flutter_launcher_icons:
   android: true
   ios: true
@@ -40,7 +40,6 @@ flutter_launcher_icons:
   intl: ^0.20.2
   get_storage: ^2.1.1
   url_launcher: ^6.3.0
- # wakelock_plus: ^1.2.11
   #perfect_volume_control: ^1.0.5
   volume_controller: ^2.0.8
   screen_brightness_util: ^0.0.3
@@ -49,13 +48,9 @@ flutter_launcher_icons:
   flutter_vlc_player: ^7.4.4
   pod_player: ^0.2.2
 
-
-
   #Http
   dio: ^5.6.0
   google_mobile_ads: ^5.1.0
-  flutter_windowmanager: ^0.2.0
-  simple_pip_mode: ^1.1.0
 
 
 dependency_overrides:
@@ -73,4 +68,3 @@ flutter:
 
   assets:
      - assets/images/
-
