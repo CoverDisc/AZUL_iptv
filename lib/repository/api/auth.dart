@@ -8,21 +8,26 @@ class AuthApi {
     String name,
   ) async {
     try {
-      debugPrint("$link/player_api.php?username=$username&password=$password");
-      Response<String> response = await _dio
-          .get("$link/player_api.php?username=$username&password=$password");
+      final normalizedLink = link.endsWith('/') ? link : '$link/';
+      final endpoint = Uri.parse(normalizedLink).resolve('player_api.php').replace(
+        queryParameters: {
+          'username': username,
+          'password': password,
+        },
+      );
+
+      final Response<String> response = await _dio.getUri<String>(endpoint);
 
       if (response.statusCode == 200) {
-        var json = jsonDecode(response.data ?? "");
+        final json = jsonDecode(response.data ?? '');
         final user = UserModel.fromJson(json, link);
-        //save to locale
         await LocaleApi.saveUser(user);
         return user;
-      } else {
-        return null;
       }
+
+      return null;
     } catch (e) {
-      debugPrint("Error: $e");
+      debugPrint('IPTV authentication failed: $e');
       return null;
     }
   }
