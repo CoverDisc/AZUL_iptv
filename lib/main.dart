@@ -25,7 +25,6 @@ import 'presentation/screens/screens.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Intl.defaultLocale = 'ar';
-  // await WakelockPlus.enable();
   await GetStorage.init();
   await GetStorage.init("favorites");
   if (showAds) {
@@ -57,13 +56,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  @override
-  void initState() {
-    super.initState();
-    //Enable FullScreen
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Shortcuts(
@@ -134,8 +126,6 @@ class _MyAppState extends State<MyApp> {
                     page: () => const LiveChannelsScreen(catyId: "")),
                 GetPage(
                     name: screenRegister, page: () => const RegisterScreen()),
-                GetPage(
-                    name: screenRegisterTv, page: () => const RegisterUserTv()),
                 GetPage(
                     name: screenRegisterTv, page: () => const RegisterUserTv()),
                 GetPage(
