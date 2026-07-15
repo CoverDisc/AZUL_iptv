@@ -45,17 +45,6 @@ import '../../repository/models/user.dart';
 import '../../repository/models/watching.dart';
 import '../widgets/widgets.dart';
 
-void debugPrint(String? message, {int? wrapWidth}) {
-  assert(() {
-    final lower = message?.toLowerCase() ?? '';
-    final redacted = lower.contains('http://') || lower.contains('https://')
-        ? 'Network URL redacted.'
-        : message;
-    foundation.debugPrint(redacted, wrapWidth: wrapWidth);
-    return true;
-  }());
-}
-
 part 'live/live_categories.dart';
 part 'live/live_channels.dart';
 part 'movie/movie_categories.dart';
@@ -76,3 +65,14 @@ part 'user/intro.dart';
 part 'user/favourites.dart';
 part 'welcome.dart';
 part 'user/catch_up.dart';
+
+void debugPrint(String? message, {int? wrapWidth}) {
+  assert(() {
+    final lower = message?.toLowerCase() ?? '';
+    final redacted = lower.contains('http://') || lower.contains('https://')
+        ? 'Network URL redacted.'
+        : message;
+    foundation.debugPrint(redacted, wrapWidth: wrapWidth);
+    return true;
+  }());
+}
