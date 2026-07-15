@@ -21,6 +21,7 @@ part '../locale/locale.dart';
 part 'auth.dart';
 part 'iptv.dart';
 part 'provisioning.dart';
+part 'xtream_client.dart';
 part '../locale/favorites.dart';
 
 final _dio = Dio(
