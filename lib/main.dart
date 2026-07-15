@@ -22,7 +22,7 @@ import 'logic/cubits/favorites/favorites_cubit.dart';
 import 'logic/cubits/settings/settings_cubit.dart';
 import 'logic/cubits/video/video_cubit.dart';
 import 'logic/cubits/watch/watching_cubit.dart';
-import 'presentation/screens/screens.dart';
+import 'presentation/screens/screens.dart' hide debugPrint;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,7 +33,7 @@ void main() async {
   try {
     await Firebase.initializeApp();
     await FirebaseAppCheck.instance.activate(
-      appleProvider: AppleProvider.appAttest,
+      providerApple: const AppleAppAttestProvider(),
     );
   } catch (error) {
     // The UI remains available so a missing Firebase plist produces a clear
