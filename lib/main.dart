@@ -1,4 +1,6 @@
 import 'dart:ui' as ui;
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -27,6 +29,18 @@ void main() async {
   Intl.defaultLocale = 'ar';
   await GetStorage.init();
   await GetStorage.init("favorites");
+
+  try {
+    await Firebase.initializeApp();
+    await FirebaseAppCheck.instance.activate(
+      appleProvider: AppleProvider.appAttest,
+    );
+  } catch (error) {
+    // The UI remains available so a missing Firebase plist produces a clear
+    // provisioning error instead of crashing at application startup.
+    debugPrint('Firebase initialization failed: $error');
+  }
+
   if (showAds) {
     MobileAds.instance.initialize();
   }
