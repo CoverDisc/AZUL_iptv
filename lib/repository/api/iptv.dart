@@ -4,38 +4,17 @@ class IpTvApi {
   /// Categories
   Future<List<CategoryModel>> getCategories(String type) async {
     try {
-      final user = await LocaleApi.getUser();
-
-      if (user == null) {
-        debugPrint("User is Null");
-        return [];
-      }
-
-      debugPrint("SERVER: ${user.serverInfo!.serverUrl}");
-
-      var url = "${user.serverInfo!.serverUrl}/player_api.php";
-
-      Response<String> response = await _dio.get(
-        url,
-        queryParameters: {
-          "password": user.userInfo!.password,
-          "username": user.userInfo!.username,
-          "action": type,
-        },
+      final response = await xtreamGet<String>(
+        type,
+        options: Options(responseType: ResponseType.plain),
       );
+      if (response.statusCode != 200) return [];
 
-      if (response.statusCode == 200) {
-        final List<dynamic> json = jsonDecode(response.data ?? "[]");
-
-        final list = json.map((e) => CategoryModel.fromJson(e)).toList();
-        //TODO: save list to locale
-
-        return list;
-      }
-
-      return [];
-    } catch (e) {
-      debugPrint("Error $type: $e");
+      final decoded = jsonDecode(response.data ?? '[]');
+      if (decoded is! List) return [];
+      return decoded.map((item) => CategoryModel.fromJson(item)).toList();
+    } catch (error) {
+      debugPrint('Category request failed: $error');
       return [];
     }
   }
@@ -43,53 +22,25 @@ class IpTvApi {
   /// Channels Live
   Future<List<ChannelLive>> getLiveChannels(String catyId) async {
     try {
-      final user = await LocaleApi.getUser();
-
-      if (user == null) {
-        debugPrint("User is Null");
-        return [];
-      }
-
-      var url = "${user.serverInfo!.serverUrl}/player_api.php";
-
-      final queryParams = {
-        "password": user.userInfo!.password,
-        "username": user.userInfo!.username,
-        "action": "get_live_streams",
-      };
-      if (catyId.isNotEmpty) {
-        queryParams["category_id"] = catyId;
-      }
-
-      Response<List<dynamic>> response = await _dio.get(
-        url,
-        queryParameters: queryParams,
+      final response = await xtreamGet<String>(
+        'get_live_streams',
+        extraQueryParameters: {
+          if (catyId.isNotEmpty) 'category_id': catyId,
+        },
+        options: Options(responseType: ResponseType.plain),
       );
-      debugPrint("URL: ${response.realUri}");
+      if (response.statusCode != 200) return [];
 
-      if (response.statusCode == 200) {
-        final json = response.data ?? [];
+      final decoded = jsonDecode(response.data ?? '[]');
+      if (decoded is! List) return [];
 
-        debugPrint("SIZE: ${json.length}");
-
-        final isAdultFilterEnabled = LocaleApi.getAdultFilter();
-        final list = json.map((e) => ChannelLive.fromJson(e)).where((c) {
-          if (!isAdultFilterEnabled) return true;
-          final n = (c.name ?? "").toLowerCase();
-          return !n.contains('18+') && 
-                 !n.contains('+18') && 
-                 !n.contains('adult') &&
-                 !n.contains('xxx') &&
-                 !n.contains('للكبار');
-        }).toList();
-        //TODO: save list to locale
-
-        return list;
-      }
-
-      return [];
-    } catch (e) {
-      log("Error Channel $catyId: $e");
+      final isAdultFilterEnabled = LocaleApi.getAdultFilter();
+      return decoded.map((item) => ChannelLive.fromJson(item)).where((channel) {
+        if (!isAdultFilterEnabled) return true;
+        return !_containsAdultMarker(channel.name);
+      }).toList();
+    } catch (error) {
+      log('Live channel request failed: $error');
       return [];
     }
   }
@@ -97,50 +48,25 @@ class IpTvApi {
   /// Channels Movie
   Future<List<ChannelMovie>> getMovieChannels(String catyId) async {
     try {
-      final user = await LocaleApi.getUser();
-
-      if (user == null) {
-        debugPrint("User is Null");
-        return [];
-      }
-
-      var url = "${user.serverInfo!.serverUrl}/player_api.php";
-
-      final queryParams = {
-        "password": user.userInfo!.password,
-        "username": user.userInfo!.username,
-        "action": "get_vod_streams",
-      };
-      if (catyId.isNotEmpty) {
-        queryParams["category_id"] = catyId;
-      }
-
-      Response<String> response = await _dio.get(
-        url,
-        queryParameters: queryParams,
+      final response = await xtreamGet<String>(
+        'get_vod_streams',
+        extraQueryParameters: {
+          if (catyId.isNotEmpty) 'category_id': catyId,
+        },
+        options: Options(responseType: ResponseType.plain),
       );
+      if (response.statusCode != 200) return [];
 
-      if (response.statusCode == 200) {
-        final List<dynamic> json = jsonDecode(response.data ?? "[]");
+      final decoded = jsonDecode(response.data ?? '[]');
+      if (decoded is! List) return [];
 
-        final isAdultFilterEnabled = LocaleApi.getAdultFilter();
-        final list = json.map((e) => ChannelMovie.fromJson(e)).where((c) {
-          if (!isAdultFilterEnabled) return true;
-          final n = (c.name ?? "").toLowerCase();
-          return !n.contains('18+') && 
-                 !n.contains('+18') && 
-                 !n.contains('adult') &&
-                 !n.contains('xxx') &&
-                 !n.contains('للكبار');
-        }).toList();
-        //TODO: save list to locale
-
-        return list;
-      }
-
-      return [];
-    } catch (e) {
-      debugPrint("Error Channel $catyId: $e");
+      final isAdultFilterEnabled = LocaleApi.getAdultFilter();
+      return decoded.map((item) => ChannelMovie.fromJson(item)).where((channel) {
+        if (!isAdultFilterEnabled) return true;
+        return !_containsAdultMarker(channel.name);
+      }).toList();
+    } catch (error) {
+      debugPrint('Movie channel request failed: $error');
       return [];
     }
   }
@@ -148,50 +74,25 @@ class IpTvApi {
   /// Channels Series
   Future<List<ChannelSerie>> getSeriesChannels(String catyId) async {
     try {
-      final user = await LocaleApi.getUser();
-
-      if (user == null) {
-        debugPrint("User is Null");
-        return [];
-      }
-
-      var url = "${user.serverInfo!.serverUrl}/player_api.php";
-
-      final queryParams = {
-        "password": user.userInfo!.password,
-        "username": user.userInfo!.username,
-        "action": "get_series",
-      };
-      if (catyId.isNotEmpty) {
-        queryParams["category_id"] = catyId;
-      }
-
-      Response<String> response = await _dio.get(
-        url,
-        queryParameters: queryParams,
+      final response = await xtreamGet<String>(
+        'get_series',
+        extraQueryParameters: {
+          if (catyId.isNotEmpty) 'category_id': catyId,
+        },
+        options: Options(responseType: ResponseType.plain),
       );
+      if (response.statusCode != 200) return [];
 
-      if (response.statusCode == 200) {
-        final List<dynamic> json = jsonDecode(response.data ?? "[]");
+      final decoded = jsonDecode(response.data ?? '[]');
+      if (decoded is! List) return [];
 
-        final isAdultFilterEnabled = LocaleApi.getAdultFilter();
-        final list = json.map((e) => ChannelSerie.fromJson(e)).where((c) {
-          if (!isAdultFilterEnabled) return true;
-          final n = (c.name ?? "").toLowerCase();
-          return !n.contains('18+') && 
-                 !n.contains('+18') && 
-                 !n.contains('adult') &&
-                 !n.contains('xxx') &&
-                 !n.contains('للكبار');
-        }).toList();
-        //TODO: save list to locale
-
-        return list;
-      }
-
-      return [];
-    } catch (e) {
-      debugPrint("Error Channel Series $catyId: $e");
+      final isAdultFilterEnabled = LocaleApi.getAdultFilter();
+      return decoded.map((item) => ChannelSerie.fromJson(item)).where((channel) {
+        if (!isAdultFilterEnabled) return true;
+        return !_containsAdultMarker(channel.name);
+      }).toList();
+    } catch (error) {
+      debugPrint('Series channel request failed: $error');
       return [];
     }
   }
@@ -199,38 +100,18 @@ class IpTvApi {
   /// Movie Detail
   static Future<MovieDetail?> getMovieDetails(String movieId) async {
     try {
-      final user = await LocaleApi.getUser();
-
-      if (user == null) {
-        debugPrint("User is Null");
-        return null;
-      }
-
-      var url = "${user.serverInfo!.serverUrl}/player_api.php";
-
-      Response<String> response = await _dio.get(
-        url,
-        queryParameters: {
-          "password": user.userInfo!.password,
-          "username": user.userInfo!.username,
-          "action": "get_vod_info",
-          "vod_id": movieId,
-        },
+      final response = await xtreamGet<String>(
+        'get_vod_info',
+        extraQueryParameters: {'vod_id': movieId},
+        options: Options(responseType: ResponseType.plain),
       );
+      if (response.statusCode != 200) return null;
 
-      debugPrint("ID: ${response.realUri}");
-
-      if (response.statusCode == 200) {
-        // log(response.data.toString());
-        final json = jsonDecode(response.data ?? "[]");
-
-        final movie = MovieDetail.fromJson(json);
-        return movie;
-      }
-
-      return null;
-    } catch (e) {
-      debugPrint("Error Movie $movieId: $e");
+      final decoded = jsonDecode(response.data ?? '{}');
+      if (decoded is! Map<String, dynamic>) return null;
+      return MovieDetail.fromJson(decoded);
+    } catch (error) {
+      debugPrint('Movie detail request failed: $error');
       return null;
     }
   }
@@ -238,35 +119,18 @@ class IpTvApi {
   /// Serie Detail
   static Future<SerieDetails?> getSerieDetails(String serieId) async {
     try {
-      final user = await LocaleApi.getUser();
-
-      if (user == null) {
-        debugPrint("User is Null");
-        return null;
-      }
-
-      var url = "${user.serverInfo!.serverUrl}/player_api.php";
-
-      Response<String> response = await _dio.get(
-        url,
-        queryParameters: {
-          "password": user.userInfo!.password,
-          "username": user.userInfo!.username,
-          "action": "get_series_info",
-          "series_id": serieId,
-        },
+      final response = await xtreamGet<String>(
+        'get_series_info',
+        extraQueryParameters: {'series_id': serieId},
+        options: Options(responseType: ResponseType.plain),
       );
+      if (response.statusCode != 200) return null;
 
-      if (response.statusCode == 200) {
-        //log(response.data.toString());
-        final json = jsonDecode(response.data ?? "");
-        final serie = SerieDetails.fromJson(json);
-        return serie;
-      }
-
-      return null;
-    } catch (e) {
-      debugPrint("Error MovSerie $serieId: $e");
+      final decoded = jsonDecode(response.data ?? '{}');
+      if (decoded is! Map<String, dynamic>) return null;
+      return SerieDetails.fromJson(decoded);
+    } catch (error) {
+      debugPrint('Series detail request failed: $error');
       return null;
     }
   }
@@ -274,38 +138,30 @@ class IpTvApi {
   /// EPG LIVE
   static Future<List<EpgModel>> getEPGbyStreamId(String streamId) async {
     try {
-      final user = await LocaleApi.getUser();
-
-      if (user == null) {
-        debugPrint("User is Null");
-        return [];
-      }
-
-      var url = "${user.serverInfo!.serverUrl}/player_api.php";
-
-      Response<String> response = await _dio.get(
-        url,
-        queryParameters: {
-          "password": user.userInfo!.password,
-          "username": user.userInfo!.username,
-          "action": "get_short_epg",
-          "stream_id": streamId,
-        },
+      final response = await xtreamGet<String>(
+        'get_short_epg',
+        extraQueryParameters: {'stream_id': streamId},
+        options: Options(responseType: ResponseType.plain),
       );
+      if (response.statusCode != 200) return [];
 
-      if (response.statusCode == 200) {
-        final List<dynamic> json =
-            jsonDecode(response.data ?? "")['epg_listings'];
-        debugPrint("EPG length: ${json.length}");
-
-        final list = json.map((e) => EpgModel.fromJson(e)).toList();
-        return list;
-      }
-
-      return [];
-    } catch (e) {
-      debugPrint("Error EPG Series $streamId: $e");
+      final decoded = jsonDecode(response.data ?? '{}');
+      if (decoded is! Map) return [];
+      final listings = decoded['epg_listings'];
+      if (listings is! List) return [];
+      return listings.map((item) => EpgModel.fromJson(item)).toList();
+    } catch (error) {
+      debugPrint('EPG request failed: $error');
       return [];
     }
+  }
+
+  static bool _containsAdultMarker(String? value) {
+    final normalized = (value ?? '').toLowerCase();
+    return normalized.contains('18+') ||
+        normalized.contains('+18') ||
+        normalized.contains('adult') ||
+        normalized.contains('xxx') ||
+        normalized.contains('للكبار');
   }
 }
