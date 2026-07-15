@@ -8,79 +8,13 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _fullUrl = TextEditingController();
-
   final _username = TextEditingController();
   final _password = TextEditingController();
-  final _url = TextEditingController();
-
-  _convertM3utoXtreme(style) {
-    showDialog(
-      context: context,
-      builder: (_) => CupertinoAlertDialog(
-        title: const Text('Past your M3u Link'),
-        content: Material(
-          color: Colors.transparent,
-          child: TextField(
-            controller: _fullUrl,
-            decoration: InputDecoration(
-              hintText:
-                  "http://domain.tr:8080?get.php/username=test&password=123",
-              hintStyle: Get.textTheme.bodyMedium!.copyWith(
-                color: Colors.grey,
-              ),
-            ),
-            style: style,
-          ),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () {
-                _fullUrl.clear();
-                Get.back();
-              },
-              child: Text(
-                'Cancel',
-                style: Get.textTheme.bodyMedium!.copyWith(
-                  color: Colors.grey.shade400,
-                ),
-              )),
-          TextButton(
-              onPressed: () {
-                var txt = _fullUrl.text;
-                if (txt.isEmpty) {
-                  return;
-                }
-
-                if (Uri.tryParse(txt)?.hasAbsolutePath ?? false) {
-                  Uri url = Uri.parse(txt);
-                  var parameters = url.queryParameters;
-                  debugPrint("${url.scheme}://${url.host}:${url.port}");
-
-                  _username.text = parameters['username'].toString();
-                  _password.text = parameters['password'].toString();
-                  _url.text =
-                      "${url.scheme}://${url.host}${url.hasPort ? ":${url.port}" : ""}";
-                  Get.back();
-                } else {
-                  debugPrint("this text is not url!!");
-                  Get.snackbar("Error", "This data is not correct??");
-                }
-              },
-              child: Text(
-                'Save',
-                style: Get.textTheme.bodyMedium!.copyWith(
-                  color: kColorPrimary,
-                ),
-              )),
-        ],
-      ),
-    );
-  }
+  final _serviceCode = TextEditingController();
 
   @override
   void dispose() {
-    _url.dispose();
+    _serviceCode.dispose();
     _username.dispose();
     _password.dispose();
     super.dispose();
@@ -102,207 +36,236 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: BlocBuilder<SettingsCubit, SettingsState>(
           builder: (context, stateSetting) {
             return SafeArea(
-                child: BlocConsumer<AuthBloc, AuthState>(
-                  listener: (context, state) {
-                    if (state is AuthFailed) {
-                      showWarningToast(
-                        context,
-                        'Login failed.',
-                        'Please check your IPTV credentials and try again.',
-                      );
-                    } else if (state is AuthSuccess) {
-                      context.read<LiveCatyBloc>().add(GetLiveCategories());
-                      context.read<MovieCatyBloc>().add(GetMovieCategories());
-                      context.read<SeriesCatyBloc>().add(GetSeriesCategories());
-                      Get.offAndToNamed(screenWelcome);
-                    }
-                  },
-                  builder: (context, state) {
-                    final isLoading = state is AuthLoading;
+              child: BlocConsumer<AuthBloc, AuthState>(
+                listener: (context, state) {
+                  if (state is AuthFailed) {
+                    showWarningToast(
+                      context,
+                      'Accesso non riuscito',
+                      'Controlla il codice servizio e le credenziali fornite dal tuo servizio autorizzato.',
+                    );
+                  } else if (state is AuthSuccess) {
+                    context.read<LiveCatyBloc>().add(GetLiveCategories());
+                    context.read<MovieCatyBloc>().add(GetMovieCategories());
+                    context.read<SeriesCatyBloc>().add(GetSeriesCategories());
+                    Get.offAndToNamed(screenWelcome);
+                  }
+                },
+                builder: (context, state) {
+                  final isLoading = state is AuthLoading;
 
-                    return IgnorePointer(
-                      ignoring: isLoading,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              IconButton(
-                                  onPressed: () => Get.back(),
-                                  icon: const Icon(
-                                    FontAwesomeIcons.chevronLeft,
-                                    color: Colors.white,
-                                  )),
-                              TextButton.icon(
-                                icon: const Icon(
-                                  FontAwesomeIcons.link,
+                  return IgnorePointer(
+                    ignoring: isLoading,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            IconButton(
+                              onPressed: () => Get.back(),
+                              icon: const Icon(
+                                FontAwesomeIcons.chevronLeft,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const Spacer(),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 16),
+                              child: Text(
+                                'Accesso servizio',
+                                style: Get.textTheme.titleMedium!.copyWith(
                                   color: Colors.white,
-                                  size: 18,
-                                ),
-                                onPressed: () {
-                                  _convertM3utoXtreme(style);
-                                },
-                                label: Text(
-                                  'ADD M3U',
-                                  style:
-                                      Get.theme.textTheme.bodyMedium!.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            ],
-                          ),
-                          Expanded(
-                            child: SingleChildScrollView(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 10),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  SizedBox(height: 1.h),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Image.asset(
-                                        kIconSplash,
-                                        width: .7.dp,
-                                        height: .7.dp,
-                                        //  color: Colors.white,
-                                      ),
-                                    ],
+                            ),
+                          ],
+                        ),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                SizedBox(height: 1.h),
+                                Image.asset(
+                                  kIconSplash,
+                                  width: .7.dp,
+                                  height: .7.dp,
+                                ),
+                                const SizedBox(height: 18),
+                                Text(
+                                  'Inserisci i dati ricevuti dal tuo servizio.',
+                                  textAlign: TextAlign.center,
+                                  style: Get.textTheme.bodyLarge!.copyWith(
+                                    color: Colors.white,
                                   ),
-                                  const SizedBox(height: 15),
-                                  Text(
-                                    'SignIn to discover all movies & tv shows & lives tv,\nand enjoy our features.',
-                                    textAlign: TextAlign.center,
-                                    style: Get.textTheme.bodyLarge!.copyWith(
-                                      color: Colors.white,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'L’app è un lettore multimediale e non fornisce canali, abbonamenti o contenuti.',
+                                  textAlign: TextAlign.center,
+                                  style: Get.textTheme.bodyMedium!.copyWith(
+                                    color: Colors.white70,
+                                  ),
+                                ),
+                                const SizedBox(height: 22),
+                                TextField(
+                                  controller: _serviceCode,
+                                  textCapitalization: TextCapitalization.characters,
+                                  keyboardType: TextInputType.visiblePassword,
+                                  autocorrect: false,
+                                  enableSuggestions: false,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(
+                                      RegExp(r'[A-Za-z0-9]'),
+                                    ),
+                                    LengthLimitingTextInputFormatter(12),
+                                  ],
+                                  decoration: InputDecoration(
+                                    hintText: 'Codice servizio, es. 036',
+                                    helperText:
+                                        'Il codice identifica la configurazione del servizio; non è un codice acquisto.',
+                                    helperMaxLines: 2,
+                                    hintStyle: Get.textTheme.bodyMedium!.copyWith(
+                                      color: Colors.grey,
+                                    ),
+                                    helperStyle: Get.textTheme.bodySmall!.copyWith(
+                                      color: Colors.white60,
+                                    ),
+                                    suffixIcon: const Icon(
+                                      FontAwesomeIcons.server,
+                                      size: 18,
+                                      color: kColorPrimary,
                                     ),
                                   ),
-                                  const SizedBox(height: 15),
-                                  TextField(
-                                    controller: _username,
-                                    decoration: InputDecoration(
-                                      hintText: "Username",
-                                      hintStyle:
-                                          Get.textTheme.bodyMedium!.copyWith(
-                                        color: Colors.grey,
-                                      ),
-                                      suffixIcon: const Icon(
-                                        FontAwesomeIcons.solidUser,
-                                        size: 18,
-                                        color: kColorPrimary,
-                                      ),
+                                  style: style,
+                                ),
+                                const SizedBox(height: 15),
+                                TextField(
+                                  controller: _username,
+                                  autocorrect: false,
+                                  enableSuggestions: false,
+                                  autofillHints: const [AutofillHints.username],
+                                  decoration: InputDecoration(
+                                    hintText: 'Username',
+                                    hintStyle: Get.textTheme.bodyMedium!.copyWith(
+                                      color: Colors.grey,
                                     ),
-                                    style: style,
-                                  ),
-                                  const SizedBox(height: 15),
-                                  TextField(
-                                    controller: _password,
-                                    decoration: InputDecoration(
-                                      hintText: "Password",
-                                      hintStyle:
-                                          Get.textTheme.bodyMedium!.copyWith(
-                                        color: Colors.grey,
-                                      ),
-                                      suffixIcon: const Icon(
-                                        FontAwesomeIcons.lock,
-                                        size: 18,
-                                        color: kColorPrimary,
-                                      ),
+                                    suffixIcon: const Icon(
+                                      FontAwesomeIcons.solidUser,
+                                      size: 18,
+                                      color: kColorPrimary,
                                     ),
-                                    style: style,
                                   ),
-                                  const SizedBox(height: 15),
-                                  TextField(
-                                    controller: _url,
-                                    decoration: InputDecoration(
-                                      hintText: "http://url.domain.net:8080",
-                                      hintStyle:
-                                          Get.textTheme.bodyMedium!.copyWith(
-                                        color: Colors.grey,
-                                      ),
-                                      suffixIcon: const Icon(
-                                        FontAwesomeIcons.link,
-                                        size: 18,
-                                        color: kColorPrimary,
-                                      ),
+                                  style: style,
+                                ),
+                                const SizedBox(height: 15),
+                                TextField(
+                                  controller: _password,
+                                  obscureText: true,
+                                  autocorrect: false,
+                                  enableSuggestions: false,
+                                  autofillHints: const [AutofillHints.password],
+                                  decoration: InputDecoration(
+                                    hintText: 'Password',
+                                    hintStyle: Get.textTheme.bodyMedium!.copyWith(
+                                      color: Colors.grey,
                                     ),
-                                    style: style,
+                                    suffixIcon: const Icon(
+                                      FontAwesomeIcons.lock,
+                                      size: 18,
+                                      color: kColorPrimary,
+                                    ),
                                   ),
-                                  const SizedBox(height: 15),
-                                  Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          FontAwesomeIcons.solidCircle,
-                                          color: Colors.white70,
-                                          size: 12.sp,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          'By registering, you are agreeing to our ',
-                                          style: Get.textTheme.bodyMedium!
-                                              .copyWith(
-                                            color: Colors.white70,
-                                          ),
-                                        ),
-                                        InkWell(
-                                          onTap: () async {
-                                            var url = Uri.parse(kPrivacy);
-                                            await launchUrl(url,
-                                                mode: LaunchMode
-                                                    .externalApplication);
-                                          },
-                                          child: Text(
-                                            'privacy policy.',
+                                  style: style,
+                                ),
+                                const SizedBox(height: 18),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(
+                                      FontAwesomeIcons.circleInfo,
+                                      color: Colors.white70,
+                                      size: 12.sp,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Wrap(
+                                        children: [
+                                          Text(
+                                            'Usando l’app accetti la ',
                                             style: Get.textTheme.bodyMedium!
-                                                .copyWith(
-                                              color: kColorPrimary
-                                                  .withOpacity(.70),
-                                              fontWeight: FontWeight.bold,
+                                                .copyWith(color: Colors.white70),
+                                          ),
+                                          InkWell(
+                                            onTap: () async {
+                                              final url = Uri.parse(kPrivacy);
+                                              await launchUrl(
+                                                url,
+                                                mode: LaunchMode
+                                                    .externalApplication,
+                                              );
+                                            },
+                                            child: Text(
+                                              'privacy policy.',
+                                              style: Get.textTheme.bodyMedium!
+                                                  .copyWith(
+                                                color: kColorPrimary
+                                                    .withOpacity(.70),
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            child: CardTallButton(
-                              label: "Add User",
-                              isLoading: isLoading,
-                              onTap: () {
-                                //Get.toNamed(screenDownload)
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                          child: CardTallButton(
+                            label: 'Accedi',
+                            isLoading: isLoading,
+                            onTap: () {
+                              FocusScope.of(context).unfocus();
 
-                                if (_username.text.isNotEmpty &&
-                                    _password.text.isNotEmpty &&
-                                    _url.text.isNotEmpty) {
-                                  context.read<AuthBloc>().add(AuthRegister(
-                                        _username.text,
-                                        _password.text,
-                                        _url.text,
-                                      ));
-                                }
-                              },
-                            ),
+                              final username = _username.text.trim();
+                              final password = _password.text;
+                              final serviceCode =
+                                  _serviceCode.text.trim().toUpperCase();
+
+                              if (username.isEmpty ||
+                                  password.isEmpty ||
+                                  serviceCode.length < 3) {
+                                showWarningToast(
+                                  context,
+                                  'Dati mancanti',
+                                  'Inserisci codice servizio, username e password.',
+                                );
+                                return;
+                              }
+
+                              context.read<AuthBloc>().add(
+                                    AuthRegister(
+                                      username,
+                                      password,
+                                      serviceCode,
+                                    ),
+                                  );
+                            },
                           ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              );
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            );
           },
         ),
       ),
