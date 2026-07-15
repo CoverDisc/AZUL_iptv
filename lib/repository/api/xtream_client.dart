@@ -64,15 +64,18 @@ Future<Response<T>> xtreamGet<T>(
 
   for (final baseUrl in servers) {
     try {
-      final endpoint = Uri.parse('$baseUrl/').resolve('player_api.php');
-      final response = await _dio.getUri<T>(
-        endpoint,
+      final endpoint = Uri.parse('$baseUrl/')
+          .resolve('player_api.php')
+          .replace(
         queryParameters: {
           'username': user.userInfo!.username,
           'password': user.userInfo!.password,
           'action': action,
           ...extraQueryParameters,
         },
+      );
+      final response = await _dio.getUri<T>(
+        endpoint,
         options: options,
       );
 
