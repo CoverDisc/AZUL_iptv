@@ -1,4 +1,6 @@
 import 'dart:ui' as ui;
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -20,14 +22,25 @@ import 'logic/cubits/favorites/favorites_cubit.dart';
 import 'logic/cubits/settings/settings_cubit.dart';
 import 'logic/cubits/video/video_cubit.dart';
 import 'logic/cubits/watch/watching_cubit.dart';
-import 'presentation/screens/screens.dart';
+import 'presentation/screens/screens.dart' hide debugPrint;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Intl.defaultLocale = 'ar';
-  // await WakelockPlus.enable();
   await GetStorage.init();
   await GetStorage.init("favorites");
+
+  try {
+    await Firebase.initializeApp();
+    await FirebaseAppCheck.instance.activate(
+      providerApple: const AppleAppAttestProvider(),
+    );
+  } catch (error) {
+    // The UI remains available so a missing Firebase plist produces a clear
+    // provisioning error instead of crashing at application startup.
+    debugPrint('Firebase initialization failed: $error');
+  }
+
   if (showAds) {
     MobileAds.instance.initialize();
   }
@@ -57,13 +70,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  @override
-  void initState() {
-    super.initState();
-    //Enable FullScreen
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Shortcuts(
@@ -134,8 +140,6 @@ class _MyAppState extends State<MyApp> {
                     page: () => const LiveChannelsScreen(catyId: "")),
                 GetPage(
                     name: screenRegister, page: () => const RegisterScreen()),
-                GetPage(
-                    name: screenRegisterTv, page: () => const RegisterUserTv()),
                 GetPage(
                     name: screenRegisterTv, page: () => const RegisterUserTv()),
                 GetPage(

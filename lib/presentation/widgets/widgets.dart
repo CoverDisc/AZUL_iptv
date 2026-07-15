@@ -18,7 +18,7 @@ import '../../logic/cubits/video/video_cubit.dart';
 import '../../logic/cubits/watch/watching_cubit.dart';
 import '../../repository/models/serie_details.dart';
 import '../../repository/models/watching.dart';
-import '../screens/screens.dart';
+import '../screens/screens.dart' hide debugPrint;
 
 part 'dialog.dart';
 part 'live.dart';

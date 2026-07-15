@@ -1,3 +1,5 @@
+import 'package:get_storage/get_storage.dart';
+
 class UserModel {
   final UserInfo? userInfo;
   final ServerInfo? serverInfo;
@@ -89,10 +91,10 @@ class ServerInfo {
   final String? timestampNow;
   final String? timeNow;
   final String? process;
-  final String? serverUrl;
+  final String? _serverUrl;
 
   ServerInfo({
-    this.serverUrl,
+    String? serverUrl,
     this.url,
     this.port,
     this.httpsPort,
@@ -102,7 +104,15 @@ class ServerInfo {
     this.timestampNow,
     this.timeNow,
     this.process,
-  });
+  }) : _serverUrl = serverUrl;
+
+  String? get serverUrl {
+    final activeServer = GetStorage().read('active_server')?.toString().trim();
+    if (activeServer != null && activeServer.isNotEmpty) {
+      return activeServer;
+    }
+    return _serverUrl;
+  }
 
   ServerInfo.fromJson(Map<String, dynamic> json, String domain)
       : url = json['url'].toString(),
@@ -114,7 +124,7 @@ class ServerInfo {
         timestampNow = json['timestamp_now'].toString(),
         timeNow = json['time_now'].toString(),
         process = json['process'].toString(),
-        serverUrl = (json['server_url'] ?? domain).toString();
+        _serverUrl = domain;
 
   Map<String, dynamic> toJson() => {
         'url': url,
@@ -126,6 +136,6 @@ class ServerInfo {
         'timestamp_now': timestampNow,
         'time_now': timeNow,
         'process': process,
-        'server_url': serverUrl
+        'server_url': _serverUrl
       };
 }

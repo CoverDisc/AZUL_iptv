@@ -1,0 +1,11 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Server profiles are read only by the trusted Cloud Function through the
+    // Admin SDK. Mobile clients must never query or enumerate this collection.
+    match /serverProfiles/{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
