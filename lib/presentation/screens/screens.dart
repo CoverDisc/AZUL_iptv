@@ -12,6 +12,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' as foundation;
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:pod_player/pod_player.dart';
 import 'package:screen_brightness_util/screen_brightness_util.dart';
@@ -43,6 +44,17 @@ import '../../repository/models/serie_details.dart';
 import '../../repository/models/user.dart';
 import '../../repository/models/watching.dart';
 import '../widgets/widgets.dart';
+
+void debugPrint(String? message, {int? wrapWidth}) {
+  assert(() {
+    final lower = message?.toLowerCase() ?? '';
+    final redacted = lower.contains('http://') || lower.contains('https://')
+        ? 'Network URL redacted.'
+        : message;
+    foundation.debugPrint(redacted, wrapWidth: wrapWidth);
+    return true;
+  }());
+}
 
 part 'live/live_categories.dart';
 part 'live/live_channels.dart';
